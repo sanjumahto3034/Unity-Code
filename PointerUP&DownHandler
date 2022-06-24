@@ -1,0 +1,31 @@
+------------------------------------- Button Movement using Code ----------------------------------------------------------
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+public class RightMove : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+
+{
+    public Transform transform;
+    bool isPressed = false;
+    
+    void Update()
+    {
+        if (isPressed)
+        {
+            transform.position = transform.position - new Vector3(0, 0, 8* Time.deltaTime);
+        } 
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        isPressed = true;
+    }
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        isPressed = false;
+    }
+}
+------------------------------------------------------------------------------------------------------------------------------
