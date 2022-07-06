@@ -1,0 +1,57 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class floatingObject : MonoBehaviour
+{
+
+    public float underWaterDrag = 3f;
+    public float underWaterAngularDrag = 1f;
+    public float airDrag = 3f;
+    public float airAngularDrag = 0.05f;
+    private Rigidbody rb;
+    bool underWater;
+    public float floatingPower = 15f;
+    public float waterHeight = 0f;
+    public float difference;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
+    
+    void Start()
+    {
+        
+    }
+
+    
+    void FixedUpdate()
+    {
+        difference = transform.position.y - waterHeight;
+        if(difference<0){
+                rb.AddForceAtPosition(Vector3.up * floatingPower * Mathf.Abs(difference),transform.position,ForceMode.Force);
+                if(!underWater){
+                    underWater = true;
+                    SwitchState(true);
+                }
+        }
+        else if(underWater){
+            underWater = false;
+            SwitchState(false);
+        }
+
+        
+    }
+
+    void SwitchState(bool isUnderWater){
+        if(isUnderWater){ 
+            rb.drag = underWaterDrag;
+            rb.angularDrag = underWaterAngularDrag;
+        }
+        else{
+            rb.drag =  airDrag;
+            rb.angularDrag = airAngularDrag;
+        }
+    }
+}
