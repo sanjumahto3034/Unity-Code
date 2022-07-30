@@ -1,0 +1,61 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class playerControll : MonoBehaviour
+{
+    public Image image;
+    private float timeRemain = 0.4f;
+    private Rigidbody2D rb;
+    public float jumpforce;
+    public float speed;
+    public bool isJumping = false;
+    private bool isGrounded = true;
+    private float playerMoveInput;
+    private void Awake(){
+        rb = GetComponent<Rigidbody2D>();
+        image.fillAmount = 0;
+    }
+    private void FixedUpdate()
+    {
+        playerMoveInput = Input.GetAxisRaw("Horizontal");
+        rb.velocity = new Vector2(playerMoveInput * speed, rb.velocity.y);
+    }
+    void Update(){
+        if(isGrounded){
+            if(Input.GetKeyDown(KeyCode.Space)){
+                rb.velocity = Vector2.up * jumpforce;
+            }
+         
+      }
+      
+      if(Input.GetKey(KeyCode.Space)){
+        if(isJumping){
+            if(timeRemain>0){
+                rb.velocity = Vector2.up * jumpforce;   
+                        timeRemain -= Time.deltaTime;
+                        image.fillAmount = timeRemain*2;
+                     }
+                     else{
+                        isJumping = false;
+                        isGrounded = false;
+                        timeRemain = 0.4f;
+                     }
+        }
+      }
+      if(Input.GetKeyUp(KeyCode.Space)){
+                        isJumping = false;
+                        isGrounded = false;
+                        timeRemain = 0.4f;
+      }
+    
+    }
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        if(other.gameObject.tag == "ground"){
+            isJumping = true;
+            isGrounded = true;
+        }
+    }
+}
