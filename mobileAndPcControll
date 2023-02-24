@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 
- [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(CharacterController))]
 public class PlayerControl : MonoBehaviour
 {
     public FloatingJoystick joystick;
@@ -14,7 +15,7 @@ public class PlayerControl : MonoBehaviour
     public float jumpSpeed = 8.0f;
     public float gravity = 20.0f;
     public Camera playerCamera;
-    public float lookSpeed = 2.0f;
+    public float lookSpeed = 0f;
     public float lookXLimit = 45.0f;
 
     CharacterController characterController;
@@ -24,6 +25,8 @@ public class PlayerControl : MonoBehaviour
     [HideInInspector]
     public bool canMove = true;
 
+    private bool isInPlayerLookTouch = false;
+
     void Start()
     {
         characterController = GetComponent<CharacterController>();
@@ -32,7 +35,7 @@ public class PlayerControl : MonoBehaviour
         // Cursor.lockState = CursorLockMode.Locked;
         // Cursor.visible = false;
     }
-   
+
     void Update()
     {
 
@@ -51,30 +54,45 @@ public class PlayerControl : MonoBehaviour
         float movementDirectionY = moveDirection.y;
         moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-        moveDirection.y =  (Input.GetButton("Jump") && canMove && characterController.isGrounded) ? jumpSpeed : movementDirectionY;
+        moveDirection.y = (Input.GetButton("Jump") && canMove && characterController.isGrounded) ? jumpSpeed : movementDirectionY;
 
         // Apply gravity. Gravity is multiplied by deltaTime twice (once here, and once below
         // when the moveDirection is multiplied by deltaTime). This is because gravity should be applied
         // as an acceleration (ms^-2)
-        if (!characterController.isGrounded)moveDirection.y -= gravity * Time.deltaTime;
+        if (!characterController.isGrounded) moveDirection.y -= gravity * Time.deltaTime;
 
         // Move the controller
         characterController.Move(moveDirection * Time.deltaTime);
-        
 
-        
+
+
         // Player and Camera rotation
-        
 
-        if (canMove)
+        if (Input.touchCount > 0)
         {
-            float getTouchX = Input.GetAxis("Mouse X");
-            float getTouchY = Input.GetAxis("Mouse Y");
-                // Debug.Log((int)getTouchX+ " : "+(int)getTouchY);
-            rotationX += -getTouchY * lookSpeed;
-            rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
-            playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-            transform.rotation *= Quaternion.Euler(0,  getTouchX* lookSpeed, 0);
+
+            foreach (Touch touch in Input.touches)
+            {
+
+                int touchId = touch.fingerId;
+                bool checkIfUiTouched = (EventSystem.current.IsPointerOverGameObject(touchId)) ? false : true; // contition is invertionay proprotion to the result
+
+                if (canMove && Input.GetTouch(0).phase == TouchPhase.Moved && checkIfUiTouched)
+                {
+                    float getTouchX = isNativeDevice ? touch.deltaPosition.x : Input.GetAxis("Mouse X");
+                    float getTouchY = isNativeDevice ? touch.deltaPosition.y : Input.GetAxis("Mouse Y");
+
+
+
+                    Debug.Log((int)getTouchX+ " : "+(int)getTouchY+" "+"Lookspeed "+lookSpeed+", "+rotationX);
+
+                    rotationX += -getTouchY * lookSpeed;
+                    rotationX = Mathf.Clamp(rotationX, -lookXLimit, lookXLimit);
+                    playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+                    transform.rotation *= Quaternion.Euler(0, getTouchX * lookSpeed, 0);
+                }
+            }
         }
     }
+
 }
